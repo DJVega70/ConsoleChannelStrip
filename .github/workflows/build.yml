@@ -1,20 +1,42 @@
-name: Build Console Channel Strip (Windows)
+name: Build Vega Productions Channel Strip
 on:
   push:
   workflow_dispatch:
 jobs:
-  build:
+  windows:
+    name: Windows VST3
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
-      - name: Configure
+      - name: Configure Vega Productions Channel Strip
         run: cmake -B build -G "Visual Studio 17 2022" -A x64
-      - name: Build
+      - name: Build Vega Productions Channel Strip
         run: cmake --build build --config Release --target ConsoleStrip_VST3
-      - name: Package
+      - name: Package Vega Productions Channel Strip
         shell: pwsh
-        run: Compress-Archive -Path "build/ConsoleStrip_artefacts/Release/VST3/Console Channel Strip.vst3" -DestinationPath ConsoleChannelStrip-VST3-win64.zip
+        run: Compress-Archive -Path "build/ConsoleStrip_artefacts/Release/VST3/Vega Productions Channel Strip.vst3" -DestinationPath VegaProductions-ChannelStrip-VST3-win64.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: ConsoleChannelStrip-VST3-win64
-          path: ConsoleChannelStrip-VST3-win64.zip
+          name: VegaProductions-ChannelStrip-Windows-VST3
+          path: VegaProductions-ChannelStrip-VST3-win64.zip
+
+  macos:
+    name: macOS VST3 + AU (Universal)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure Vega Productions Channel Strip
+        run: cmake -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+      - name: Build Vega Productions Channel Strip
+        run: cmake --build build --config Release --target ConsoleStrip_VST3 ConsoleStrip_AU --parallel
+      - name: Sign and package Vega Productions Channel Strip
+        run: |
+          codesign --force --deep -s - "build/ConsoleStrip_artefacts/Release/VST3/Vega Productions Channel Strip.vst3"
+          codesign --force --deep -s - "build/ConsoleStrip_artefacts/Release/AU/Vega Productions Channel Strip.component"
+          mkdir -p dist-ConsoleStrip
+          cp -R "build/ConsoleStrip_artefacts/Release/VST3/Vega Productions Channel Strip.vst3" "build/ConsoleStrip_artefacts/Release/AU/Vega Productions Channel Strip.component" dist-ConsoleStrip/
+          cd dist-ConsoleStrip && zip -r -y ../VegaProductions-ChannelStrip-macOS.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VegaProductions-ChannelStrip-macOS-VST3-AU
+          path: VegaProductions-ChannelStrip-macOS.zip

@@ -11,12 +11,17 @@ FetchContent_Declare(JUCE
     GIT_SHALLOW ON)
 FetchContent_MakeAvailable(JUCE)
 
+set(VEGA_FORMATS VST3 Standalone)
+if(APPLE)
+    list(APPEND VEGA_FORMATS AU)
+endif()
+
 juce_add_plugin(ConsoleStrip
-    COMPANY_NAME "StudioTools"
+    COMPANY_NAME "Vega Productions"
     PLUGIN_MANUFACTURER_CODE Stlz
     PLUGIN_CODE Csn1
-    FORMATS VST3 Standalone
-    PRODUCT_NAME "Console Channel Strip"
+    FORMATS ${VEGA_FORMATS}
+    PRODUCT_NAME "Vega Productions Channel Strip"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
